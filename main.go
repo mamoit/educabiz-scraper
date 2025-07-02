@@ -129,16 +129,13 @@ func scrape(hostname string, username string, password string) {
 	fmt.Println(children)
 
 	for _, child := range children {
-		getChildPhotos(client, hostname, child)
+		pictures := getChildPhotos(client, hostname, child)
+		for _, picture := range pictures {
+			extension := strings.Split(picture.Type, "/")[1]
+			fmt.Println(picture.ShortDate, picture.ImageLarge)
+			downloadFile(fmt.Sprintf("%s-%d.%s", picture.ShortDate, picture.LargeId, extension), picture.ImageLarge)
+		}
 	}
-
-	// Get photos
-	// /childctrl/childgalleryloadmore
-	// {
-	// 	"childId": "123"
-	// 	"page": "1"
-	// }
-	// Returns empty when there's no more content
 }
 
 type EBizPicture struct {
@@ -187,7 +184,8 @@ type Child struct {
 	Name string
 }
 
-func getChildPhotos(client http.Client, hostname string, child Child) {
+func getChildPhotos(client http.Client, hostname string, child Child) []EBizPicture {
+	var pictures []EBizPicture
 	page := 1
 	for {
 		resp, _ := client.PostForm(
@@ -203,16 +201,40 @@ func getChildPhotos(client http.Client, hostname string, child Child) {
 		var result EBizPictures
 		if err := json.Unmarshal(respBody, &result); err != nil {
 			fmt.Println("Can not unmarshal JSON")
+			return nil
 		}
 		if len(result.Pictures) == 0 {
 			break
-		} else {
-			for _, picture := range result.Pictures {
-				fmt.Println(picture.ShortDate, picture.ImageLarge)
-			}
 		}
+		pictures = append(pictures, result.Pictures...)
 		page++
 	}
+	return pictures
+}
+
+func downloadFile(filepath string, url string) (err error) {
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func getChildrenList(client http.Client, hostname string) []Child {
