@@ -63,6 +63,7 @@ func main() {
 	folderSelectionButton := widget.NewButton("Select Output Folder", func() {
 		folderSelectionDialog.Show()
 	})
+	folderSelectionButton.Disable()
 
 	downloadButton := widget.NewButton("Download!", func() {
 		scrape(fmt.Sprintf("https://%s.educabiz.com/", subdomainInput.Text), usernameInput.Text, passwordInput.Text)
