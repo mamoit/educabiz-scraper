@@ -105,7 +105,7 @@ func scrape(hostname string, username string, password string) {
 	respBody, _ := io.ReadAll(resp.Body)
 
 	var result EBizAuthenticate
-	if err := json.Unmarshal(respBody, &result); err != nil { // Parse []byte to go struct pointer
+	if err := json.Unmarshal(respBody, &result); err != nil {
 		fmt.Println("Can not unmarshal JSON")
 	}
 
