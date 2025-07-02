@@ -244,6 +244,9 @@ func downloadFile(filepath string, url string) (err error) {
 
 func getChildrenList(client http.Client, hostname string) []Child {
 	resp, err := client.Get(fmt.Sprintf("%seducators/home", hostname))
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer resp.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
