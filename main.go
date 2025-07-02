@@ -217,6 +217,7 @@ func getChildPhotos(client http.Client, hostname string, child Child) []EBizPict
 	return pictures
 }
 
+// Borrowed from https://stackoverflow.com/a/33853856
 func downloadFile(filepath string, url string) (err error) {
 
 	// Create the file
