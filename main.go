@@ -30,7 +30,6 @@ func main() {
 	w := a.NewWindow("Educabiz Downloader")
 	w.Resize(fyne.NewSize(600, 400))
 
-	hello := widget.NewLabel("This program is meant to provide an easy way to download all the data from an educabiz instance.")
 	subdomainInput := widget.NewEntry()
 	subdomainInput.SetPlaceHolder("subdomain goes here")
 	subdomainInputCheckButton := widget.NewButton("check subdomain", func() {
@@ -72,7 +71,6 @@ func main() {
 	progressBar = widget.NewProgressBar()
 
 	w.SetContent(container.NewVBox(
-		hello,
 		subdomainLayout,
 		credentialsLayout,
 		folderSelectionButton,
