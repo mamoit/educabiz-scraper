@@ -23,6 +23,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+var progressBar *widget.ProgressBar
+
 func main() {
 	a := app.NewWithID("com.educabiz.downloader")
 	w := a.NewWindow("Educabiz Downloader")
@@ -67,12 +69,15 @@ func main() {
 		scrape(fmt.Sprintf("https://%s.educabiz.com/", subdomainInput.Text), usernameInput.Text, passwordInput.Text)
 	})
 
+	progressBar = widget.NewProgressBar()
+
 	w.SetContent(container.NewVBox(
 		hello,
 		subdomainLayout,
 		credentialsLayout,
 		folderSelectionButton,
 		downloadButton,
+		progressBar,
 	))
 
 	w.ShowAndRun()
@@ -130,10 +135,12 @@ func scrape(hostname string, username string, password string) {
 
 	for _, child := range children {
 		pictures := getChildPhotos(client, hostname, child)
-		for _, picture := range pictures {
+		length := len(pictures)
+		for i, picture := range pictures {
 			extension := strings.Split(picture.Type, "/")[1]
 			fmt.Println(picture.ShortDate, picture.ImageLarge)
 			downloadFile(fmt.Sprintf("%s-%d.%s", picture.ShortDate, picture.LargeId, extension), picture.ImageLarge)
+			progressBar.SetValue(float64(i+1) / float64(length))
 		}
 	}
 }
