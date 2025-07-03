@@ -16,6 +16,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
@@ -55,8 +56,10 @@ func main() {
 
 	usernameInput := widget.NewEntry()
 	usernameInput.SetPlaceHolder("username")
+	usernameInput.Validator = validation.NewRegexp(".+", "can't be empty")
 	passwordInput := widget.NewPasswordEntry()
 	passwordInput.SetPlaceHolder("password")
+	passwordInput.Validator = validation.NewRegexp(".+", "can't be empty")
 	credentialsLayout := container.New(layout.NewGridLayout(2), usernameInput, passwordInput)
 
 	folderSelectionDialog := dialog.NewFolderOpen(func(fyne.ListableURI, error) {}, w)
