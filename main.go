@@ -142,17 +142,34 @@ func scrape(hostname string, username string, password string) {
 		pictures := getChildPhotos(client, hostname, child)
 		totalPictures := len(pictures)
 		for i, picture := range pictures {
-			extension := strings.Split(picture.Type, "/")[1]
+			filePath := fmt.Sprintf("%s/%s-%d", downloadDir, picture.ShortDate, picture.LargeId)
+			// Write media file description to a text file
+			textFilePath := fmt.Sprintf("%s.txt", filePath)
+			if _, err := os.Stat(textFilePath); errors.Is(err, os.ErrNotExist) {
+				file, err := os.Create(textFilePath)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "Failed to create file: %v\n", err)
+					return
+				}
+				defer file.Close()
+
+				fmt.Fprintln(file, picture.Label)
+				fmt.Fprintln(file, picture.Description)
+			}
+
+			// Download media file itself
 			fmt.Println(picture.ShortDate, picture.ImageLarge)
-			filePath := fmt.Sprintf("%s/%s-%d.%s", downloadDir, picture.ShortDate, picture.LargeId, extension)
-			if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
-				downloadFile(filePath, picture.ImageLarge)
+
+			extension := strings.Split(picture.Type, "/")[1]
+			mediaFilePath := fmt.Sprintf("%s.%s", filePath, extension)
+			if _, err := os.Stat(mediaFilePath); errors.Is(err, os.ErrNotExist) {
+				downloadFile(mediaFilePath, picture.ImageLarge)
+
 			}
 			fyne.Do(func() {
 				progressBar.SetValue(float64(i+1) / float64(totalPictures))
 				progressBar.Refresh()
 			})
-
 		}
 	}
 }
