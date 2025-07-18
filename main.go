@@ -25,6 +25,7 @@ import (
 )
 
 var progressBar *widget.ProgressBar
+var downloadButton *widget.Button
 
 func main() {
 	a := app.NewWithID("com.educabiz.downloader")
@@ -33,6 +34,10 @@ func main() {
 
 	subdomainInput := widget.NewEntry()
 	subdomainInput.SetPlaceHolder("subdomain goes here")
+	subdomainInput.OnChanged = func(string) {
+		downloadButton.Disable()
+	}
+
 	subdomainInputCheckButton := widget.NewButton("check subdomain", func() {
 		// Query the school's homepage
 		hostname := fmt.Sprintf("%s.educabiz.com", subdomainInput.Text)
@@ -48,7 +53,7 @@ func main() {
 			fmt.Println("No such school")
 			return
 		} else {
-			fmt.Println("OK")
+			downloadButton.Enable()
 			return
 		}
 	})
@@ -68,9 +73,10 @@ func main() {
 	// })
 	// folderSelectionButton.Disable()
 
-	downloadButton := widget.NewButton("Download!", func() {
+	downloadButton = widget.NewButton("Download!", func() {
 		go scrape(fmt.Sprintf("https://%s.educabiz.com/", subdomainInput.Text), usernameInput.Text, passwordInput.Text)
 	})
+	downloadButton.Disable()
 
 	progressBar = widget.NewProgressBar()
 
