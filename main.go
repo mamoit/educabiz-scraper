@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -26,8 +27,12 @@ import (
 
 var progressBar *widget.ProgressBar
 var downloadButton *widget.Button
+var flagDevMode *bool
 
 func main() {
+	flagDevMode = flag.Bool("dev", false, "run the program in dev mode")
+	flag.Parse()
+
 	a := app.NewWithID("com.educabiz.downloader")
 	w := a.NewWindow("Educabiz Downloader")
 	w.Resize(fyne.NewSize(600, 400))
@@ -171,12 +176,16 @@ func scrape(hostname string, username string, password string) {
 			}
 
 			// Download media file itself
-			fmt.Println(picture.ShortDate, picture.ImageLarge)
+			mediaUrl := picture.ImageLarge
+			if *flagDevMode {
+				mediaUrl = picture.ImgMediumSignedUrl
+			}
+			fmt.Println(picture.ShortDate, mediaUrl)
 
 			extension := strings.Split(picture.Type, "/")[1]
 			mediaFilePath := fmt.Sprintf("%s.%s", filePath, extension)
 			if _, err := os.Stat(mediaFilePath); errors.Is(err, os.ErrNotExist) {
-				downloadFile(mediaFilePath, picture.ImageLarge)
+				downloadFile(mediaFilePath, mediaUrl)
 
 			}
 			fyne.Do(func() {
