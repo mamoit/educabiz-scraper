@@ -86,7 +86,6 @@ func main() {
 	// folderSelectionButton.Disable()
 
 	downloadButton = widget.NewButton("Download!", func() {
-		progressBar.SetValue(0)
 		go scrape(fmt.Sprintf("https://%s.educabiz.com/", subdomainInput.Text), usernameInput.Text, passwordInput.Text)
 	})
 	downloadButton.Disable()
@@ -106,6 +105,18 @@ func main() {
 }
 
 func scrape(hostname string, username string, password string) {
+	fyne.Do(func() {
+		progressBar.SetValue(0)
+		downloadButton.Disable()
+		progressBar.Refresh()
+		downloadButton.Refresh()
+	})
+
+	defer fyne.Do(func() {
+		downloadButton.Enable()
+		downloadButton.Refresh()
+	})
+
 	jar, _ := cookiejar.New(nil)
 	client := http.Client{
 		Jar: jar,
