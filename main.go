@@ -32,6 +32,13 @@ func main() {
 	w := a.NewWindow("Educabiz Downloader")
 	w.Resize(fyne.NewSize(600, 400))
 
+	instructionsText := "Instructions:\n" +
+		"1. Fill in the subdomain\n" +
+		"2. Press \"check subdomain\" to validate that it is correct\n" +
+		"3. Fill in the username and password\n" +
+		"4. Press download and wait for the progress bar to finish"
+	instructions := widget.NewLabel(instructionsText)
+
 	subdomainInput := widget.NewEntry()
 	subdomainInput.SetPlaceHolder("subdomain goes here")
 	subdomainInput.OnChanged = func(string) {
@@ -81,6 +88,7 @@ func main() {
 	progressBar = widget.NewProgressBar()
 
 	w.SetContent(container.NewVBox(
+		instructions,
 		subdomainLayout,
 		credentialsLayout,
 		// folderSelectionButton,
