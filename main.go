@@ -86,6 +86,7 @@ func main() {
 	// folderSelectionButton.Disable()
 
 	downloadButton = widget.NewButton("Download!", func() {
+		progressBar.SetValue(0)
 		go scrape(fmt.Sprintf("https://%s.educabiz.com/", subdomainInput.Text), usernameInput.Text, passwordInput.Text)
 	})
 	downloadButton.Disable()
