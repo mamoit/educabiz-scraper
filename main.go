@@ -18,7 +18,6 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/validation"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
@@ -63,11 +62,11 @@ func main() {
 	passwordInput.Validator = validation.NewRegexp(".+", "can't be empty")
 	credentialsLayout := container.New(layout.NewGridLayout(2), usernameInput, passwordInput)
 
-	folderSelectionDialog := dialog.NewFolderOpen(func(fyne.ListableURI, error) {}, w)
-	folderSelectionButton := widget.NewButton("Select Output Folder", func() {
-		folderSelectionDialog.Show()
-	})
-	folderSelectionButton.Disable()
+	// folderSelectionDialog := dialog.NewFolderOpen(func(fyne.ListableURI, error) {}, w)
+	// folderSelectionButton := widget.NewButton("Select Output Folder", func() {
+	// 	folderSelectionDialog.Show()
+	// })
+	// folderSelectionButton.Disable()
 
 	downloadButton := widget.NewButton("Download!", func() {
 		go scrape(fmt.Sprintf("https://%s.educabiz.com/", subdomainInput.Text), usernameInput.Text, passwordInput.Text)
@@ -78,7 +77,7 @@ func main() {
 	w.SetContent(container.NewVBox(
 		subdomainLayout,
 		credentialsLayout,
-		folderSelectionButton,
+		// folderSelectionButton,
 		downloadButton,
 		progressBar,
 	))
