@@ -136,12 +136,14 @@ func scrape(hostname string, username string, password string) {
 	fmt.Println(children)
 
 	for _, child := range children {
+		downloadDir := fmt.Sprintf("%s/gallery", child.Name)
+		os.MkdirAll(downloadDir, 0750)
 		pictures := getChildPhotos(client, hostname, child)
 		length := len(pictures)
 		for i, picture := range pictures {
 			extension := strings.Split(picture.Type, "/")[1]
 			fmt.Println(picture.ShortDate, picture.ImageLarge)
-			downloadFile(fmt.Sprintf("%s-%d.%s", picture.ShortDate, picture.LargeId, extension), picture.ImageLarge)
+			downloadFile(fmt.Sprintf("%s/%s-%d.%s", downloadDir, picture.ShortDate, picture.LargeId, extension), picture.ImageLarge)
 			progressBar.SetValue(float64(i+1) / float64(length))
 		}
 	}
