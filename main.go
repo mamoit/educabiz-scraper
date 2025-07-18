@@ -70,7 +70,7 @@ func main() {
 	folderSelectionButton.Disable()
 
 	downloadButton := widget.NewButton("Download!", func() {
-		scrape(fmt.Sprintf("https://%s.educabiz.com/", subdomainInput.Text), usernameInput.Text, passwordInput.Text)
+		go scrape(fmt.Sprintf("https://%s.educabiz.com/", subdomainInput.Text), usernameInput.Text, passwordInput.Text)
 	})
 
 	progressBar = widget.NewProgressBar()
@@ -148,7 +148,11 @@ func scrape(hostname string, username string, password string) {
 			if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 				downloadFile(filePath, picture.ImageLarge)
 			}
-			progressBar.SetValue(float64(i+1) / float64(totalPictures))
+			fyne.Do(func() {
+				progressBar.SetValue(float64(i+1) / float64(totalPictures))
+				progressBar.Refresh()
+			})
+
 		}
 	}
 }
