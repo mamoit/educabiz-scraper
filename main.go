@@ -18,7 +18,6 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
@@ -29,6 +28,8 @@ var progressBar *widget.ProgressBar
 var subdomainInput *widget.Entry
 var subdomainInputCheckButton *widget.Button
 var downloadButton *widget.Button
+var usernameInput *widget.Entry
+var passwordInput *widget.Entry
 var flagDevMode *bool
 
 func main() {
@@ -72,12 +73,18 @@ func main() {
 	})
 	subdomainLayout := container.New(layout.NewGridLayout(2), subdomainInput, subdomainInputCheckButton)
 
-	usernameInput := widget.NewEntry()
+	usernameInput = widget.NewEntry()
 	usernameInput.SetPlaceHolder("username")
-	usernameInput.Validator = validation.NewRegexp(".+", "can't be empty")
-	passwordInput := widget.NewPasswordEntry()
+	usernameInput.OnChanged = func(s string) {
+		downloadButton.Text = "Download!"
+		downloadButton.Refresh()
+	}
+	passwordInput = widget.NewPasswordEntry()
 	passwordInput.SetPlaceHolder("password")
-	passwordInput.Validator = validation.NewRegexp(".+", "can't be empty")
+	passwordInput.OnChanged = func(s string) {
+		downloadButton.Text = "Download!"
+		downloadButton.Refresh()
+	}
 	credentialsLayout := container.New(layout.NewGridLayout(2), usernameInput, passwordInput)
 
 	// folderSelectionDialog := dialog.NewFolderOpen(func(fyne.ListableURI, error) {}, w)
@@ -197,9 +204,20 @@ func scrape(hostname string, username string, password string) {
 		log.Println("Can not unmarshal JSON")
 	}
 
+	// Show that the credentials are wrong
 	if result.Error != "" {
 		log.Println("Failed to login")
+		fyne.Do(func() {
+			downloadButton.Text = "Wrong credentials ❌"
+		})
 		return
+	} else {
+		fyne.Do(func() {
+			usernameInput.Disable()
+			usernameInput.Refresh()
+			passwordInput.Disable()
+			passwordInput.Refresh()
+		})
 	}
 
 	// Get the actual login cookies
