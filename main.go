@@ -30,6 +30,21 @@ var downloadButton *widget.Button
 var flagDevMode *bool
 
 func main() {
+	logFileName := "educabiz-scraper.log.txt"
+
+	// open log file
+	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer logFile.Close()
+
+	logMW := io.MultiWriter(os.Stdout, logFile)
+	log.SetOutput(logMW)
+
+	// log date-time, filename, and line number
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
 	flagDevMode = flag.Bool("dev", false, "run the program in dev mode")
 	flag.Parse()
 
@@ -55,14 +70,14 @@ func main() {
 		hostname := fmt.Sprintf("%s.educabiz.com", subdomainInput.Text)
 		resp, err := http.Get(fmt.Sprintf("https://%s/", hostname))
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Println(err)
 			return
 		}
 
 		// If the school does not exist the server redirects the request to a school not found page
 		found, _ := regexp.MatchString(`/school/notFound`, resp.Request.URL.String())
 		if found {
-			fmt.Println("No such school")
+			log.Println("No such school")
 			return
 		} else {
 			downloadButton.Enable()
@@ -125,7 +140,7 @@ func scrape(hostname string, username string, password string) {
 	// Get a session cookie
 	_, err := client.Get(hostname)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 	authenticityToken, _ := getAuthenticityToken(hostname, jar)
@@ -138,17 +153,16 @@ func scrape(hostname string, username string, password string) {
 			"password": {password},
 		},
 	)
-	fmt.Println(resp.StatusCode)
 	defer resp.Body.Close()
 	respBody, _ := io.ReadAll(resp.Body)
 
 	var result EBizAuthenticate
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		fmt.Println("Can not unmarshal JSON")
+		log.Println("Can not unmarshal JSON")
 	}
 
 	if result.Error != "" {
-		fmt.Println("Failed to login")
+		log.Println("Failed to login")
 		return
 	}
 
@@ -164,7 +178,7 @@ func scrape(hostname string, username string, password string) {
 
 	// Loop Children
 	children := getChildrenList(client, hostname)
-	fmt.Println(children)
+	log.Println(children)
 
 	for _, child := range children {
 		downloadDir := fmt.Sprintf("%s/gallery", child.Name)
@@ -192,13 +206,11 @@ func scrape(hostname string, username string, password string) {
 			if *flagDevMode {
 				mediaUrl = picture.ImgMediumSignedUrl
 			}
-			fmt.Println(picture.ShortDate, mediaUrl)
 
 			extension := strings.Split(picture.Type, "/")[1]
 			mediaFilePath := fmt.Sprintf("%s.%s", filePath, extension)
 			if _, err := os.Stat(mediaFilePath); errors.Is(err, os.ErrNotExist) {
 				downloadFile(mediaFilePath, mediaUrl)
-
 			}
 			fyne.Do(func() {
 				progressBar.SetValue(float64(i+1) / float64(totalPictures))
@@ -270,7 +282,7 @@ func getChildPhotos(client http.Client, hostname string, child Child) []EBizPict
 
 		var result EBizPictures
 		if err := json.Unmarshal(respBody, &result); err != nil {
-			fmt.Println("Can not unmarshal JSON")
+			log.Println("Can not unmarshal JSON")
 			return nil
 		}
 		if len(result.Pictures) == 0 {
@@ -332,7 +344,7 @@ func getChildrenList(client http.Client, hostname string) []Child {
 		re := regexp.MustCompile(childIdRegex)
 		matches := re.FindStringSubmatch(childUrl)
 		childId, _ := strconv.Atoi(matches[1])
-		fmt.Printf("%d: %s\n", childId, childName)
+		log.Printf("%d: %s\n", childId, childName)
 		children = append(children, Child{Id: childId, Name: childName})
 	})
 	return children
