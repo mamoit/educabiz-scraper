@@ -133,10 +133,11 @@ func checkSubdomain() {
 	// If the school does not exist the server redirects the request to a school not found page
 	found, _ := regexp.MatchString(`/school/notFound`, resp.Request.URL.String())
 	if found {
-		log.Println("No such school")
+		log.Printf("Subdomain %s is invalid", subdomainInput.Text)
 		fyne.Do(reEnableSubdomainFields)
 		return
 	} else {
+		log.Printf("Subdomain %s is valid", subdomainInput.Text)
 		defer fyne.Do(func() {
 			subdomainInputCheckButton.Text = "subdomain is valid ✅"
 			downloadButton.Enable()
@@ -184,6 +185,10 @@ func scrape(hostname string, username string, password string) {
 			"password": {password},
 		},
 	)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	defer resp.Body.Close()
 	respBody, _ := io.ReadAll(resp.Body)
 
@@ -301,14 +306,19 @@ func getChildPhotos(client http.Client, hostname string, child Child) []EBizPict
 	var pictures []EBizPicture
 	page := 1
 	for {
-		resp, _ := client.PostForm(
+		resp, err := client.PostForm(
 			fmt.Sprintf("%schildctrl/childgalleryloadmore", hostname),
 			url.Values{
 				"childId": {fmt.Sprint(child.Id)},
 				"page":    {fmt.Sprint(page)},
 			},
 		)
+		if err != nil {
+			log.Println(err)
+			return nil
+		}
 		defer resp.Body.Close()
+
 		respBody, _ := io.ReadAll(resp.Body)
 
 		var result EBizPictures
