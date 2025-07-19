@@ -26,6 +26,8 @@ import (
 )
 
 var progressBar *widget.ProgressBar
+var subdomainInput *widget.Entry
+var subdomainInputCheckButton *widget.Button
 var downloadButton *widget.Button
 var flagDevMode *bool
 
@@ -59,30 +61,14 @@ func main() {
 		"4. Press download and wait for the progress bar to finish"
 	instructions := widget.NewLabel(instructionsText)
 
-	subdomainInput := widget.NewEntry()
+	subdomainInput = widget.NewEntry()
 	subdomainInput.SetPlaceHolder("subdomain goes here")
 	subdomainInput.OnChanged = func(string) {
 		downloadButton.Disable()
 	}
 
-	subdomainInputCheckButton := widget.NewButton("check subdomain", func() {
-		// Query the school's homepage
-		hostname := fmt.Sprintf("%s.educabiz.com", subdomainInput.Text)
-		resp, err := http.Get(fmt.Sprintf("https://%s/", hostname))
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		// If the school does not exist the server redirects the request to a school not found page
-		found, _ := regexp.MatchString(`/school/notFound`, resp.Request.URL.String())
-		if found {
-			log.Println("No such school")
-			return
-		} else {
-			downloadButton.Enable()
-			return
-		}
+	subdomainInputCheckButton = widget.NewButton("check subdomain", func() {
+		go checkSubdomain()
 	})
 	subdomainLayout := container.New(layout.NewGridLayout(2), subdomainInput, subdomainInputCheckButton)
 
@@ -117,6 +103,51 @@ func main() {
 	))
 
 	w.ShowAndRun()
+}
+
+func checkSubdomain() {
+
+	reEnableSubdomainFields := func() {
+		subdomainInputCheckButton.Enable()
+		subdomainInputCheckButton.Refresh()
+		subdomainInput.Enable()
+		subdomainInput.Refresh()
+	}
+
+	fyne.Do(func() {
+		subdomainInputCheckButton.Disable()
+		subdomainInputCheckButton.Refresh()
+		subdomainInput.Disable()
+		subdomainInput.Refresh()
+	})
+
+	// Query the school's homepage
+	hostname := fmt.Sprintf("%s.educabiz.com", subdomainInput.Text)
+	resp, err := http.Get(fmt.Sprintf("https://%s/", hostname))
+	if err != nil {
+		log.Println(err)
+		fyne.Do(reEnableSubdomainFields)
+		return
+	}
+
+	// If the school does not exist the server redirects the request to a school not found page
+	found, _ := regexp.MatchString(`/school/notFound`, resp.Request.URL.String())
+	if found {
+		log.Println("No such school")
+		fyne.Do(reEnableSubdomainFields)
+		return
+	} else {
+		defer fyne.Do(func() {
+			subdomainInputCheckButton.Text = "subdomain is valid ✅"
+			downloadButton.Enable()
+			downloadButton.Refresh()
+			subdomainInputCheckButton.Disable()
+			subdomainInputCheckButton.Refresh()
+			subdomainInput.Disable()
+			subdomainInput.Refresh()
+		})
+		return
+	}
 }
 
 func scrape(hostname string, username string, password string) {
