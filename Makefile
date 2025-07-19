@@ -1,11 +1,16 @@
 all: linux windows
 
+GO_BUILD_OPTS := -trimpath
+
+GIT_TAG := $(shell git tag --points-at HEAD)
+BINARY_FILENAME := educabiz-scraper$(if $(GIT_TAG),-$(GIT_TAG))
+LINUX_FILENAME := $(BINARY_FILENAME)-linux
+WINDOWS_FILENAME := $(BINARY_FILENAME)-windows.exe
+
 linux:
-	go build -trimpath
-	# strip educabiz-scraper
-	# upx --best educabiz-scraper
+	go build $(GO_BUILD_OPTS) -o $(LINUX_FILENAME)
+	upx --best $(LINUX_FILENAME)
 
 windows:
-	CGO_ENABLED=1 GOOS=windows CC=x86_64-w64-mingw32-gcc go build -trimpath
-	# strip educabiz-scraper.exe
-	# upx --best educabiz-scraper.exe
+	CGO_ENABLED=1 GOOS=windows CC=x86_64-w64-mingw32-gcc go build $(GO_BUILD_OPTS) -o $(WINDOWS_FILENAME)
+	upx --best $(WINDOWS_FILENAME)
