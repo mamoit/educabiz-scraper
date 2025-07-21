@@ -1,0 +1,13 @@
+{
+    "Educabiz Downloader": "Downloader do Educabiz",
+    "Instructions": "Instruções:\n1. Preencher o subdomínio que podes encontrar no URL do site da escola (subdomínio.educabiz.com)\n2. Carregar em \"verificar subdomínio\" para validar que está correcto\n3. Preencher o utilizador e password\n4. Carregar no download e esperar que a barra de progresso chegue ao fim",
+    "run the program in dev mode": "correr o programa em modo de desenvolvimento",
+    "subdomain goes here": "subdomínio",
+    "check subdomain": "verificar subdomínio",
+    "username": "utilizador",
+    "Download!": "Download!",
+    "password": "password",
+    "subdomain is invalid ❌": "o subdomínio é inválido ❌",
+    "subdomain is valid ✅": "o subdomínio é válido ✅",
+    "Wrong credentials ❌": "Credenciais erradas ❌"
+}

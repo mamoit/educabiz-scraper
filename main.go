@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -18,6 +19,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/lang"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 
@@ -31,6 +33,9 @@ var downloadButton *widget.Button
 var usernameInput *widget.Entry
 var passwordInput *widget.Entry
 var flagDevMode *bool
+
+//go:embed translations
+var translations embed.FS
 
 func main() {
 	logFileName := "educabiz-scraper.log.txt"
@@ -48,43 +53,45 @@ func main() {
 	// log date-time, filename, and line number
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
+	lang.AddTranslationsFS(translations, "translations")
+
 	flagDevMode = flag.Bool("dev", false, "run the program in dev mode")
 	flag.Parse()
 
 	a := app.NewWithID("com.educabiz.downloader")
-	w := a.NewWindow("Educabiz Downloader")
+	w := a.NewWindow(lang.L("Educabiz Downloader"))
 	w.Resize(fyne.NewSize(600, 400))
 
-	instructionsText := "Instructions:\n" +
-		"1. Fill in the subdomain found in the school's site url (subdomain.educabiz.com)\n" +
-		"2. Press \"check subdomain\" to validate that it is correct\n" +
-		"3. Fill in the username and password\n" +
-		"4. Press download and wait for the progress bar to finish"
+	instructionsText := lang.X("Instructions", "Instructions:\n"+
+		"1. Fill in the subdomain found in the school's site url (subdomain.educabiz.com)\n"+
+		"2. Press \"check subdomain\" to validate that it is correct\n"+
+		"3. Fill in the username and password\n"+
+		"4. Press download and wait for the progress bar to finish")
 	instructions := widget.NewLabel(instructionsText)
 
 	subdomainInput = widget.NewEntry()
-	subdomainInput.SetPlaceHolder("subdomain goes here")
+	subdomainInput.SetPlaceHolder(lang.L("subdomain goes here"))
 	subdomainInput.OnChanged = func(string) {
-		subdomainInputCheckButton.Text = "check subdomain"
+		subdomainInputCheckButton.Text = lang.L("check subdomain")
 		subdomainInputCheckButton.Refresh()
 		downloadButton.Disable()
 	}
 
-	subdomainInputCheckButton = widget.NewButton("check subdomain", func() {
+	subdomainInputCheckButton = widget.NewButton(lang.L("check subdomain"), func() {
 		go checkSubdomain()
 	})
 	subdomainLayout := container.New(layout.NewGridLayout(2), subdomainInput, subdomainInputCheckButton)
 
 	usernameInput = widget.NewEntry()
-	usernameInput.SetPlaceHolder("username")
+	usernameInput.SetPlaceHolder(lang.L("username"))
 	usernameInput.OnChanged = func(s string) {
-		downloadButton.Text = "Download!"
+		downloadButton.Text = lang.L("Download!")
 		downloadButton.Refresh()
 	}
 	passwordInput = widget.NewPasswordEntry()
-	passwordInput.SetPlaceHolder("password")
+	passwordInput.SetPlaceHolder(lang.L("password"))
 	passwordInput.OnChanged = func(s string) {
-		downloadButton.Text = "Download!"
+		downloadButton.Text = lang.L("Download!")
 		downloadButton.Refresh()
 	}
 	credentialsLayout := container.New(layout.NewGridLayout(2), usernameInput, passwordInput)
@@ -95,7 +102,7 @@ func main() {
 	// })
 	// folderSelectionButton.Disable()
 
-	downloadButton = widget.NewButton("Download!", func() {
+	downloadButton = widget.NewButton(lang.L("Download!"), func() {
 		go scrape(fmt.Sprintf("https://%s.educabiz.com/", subdomainInput.Text), usernameInput.Text, passwordInput.Text)
 	})
 	downloadButton.Disable()
@@ -117,7 +124,7 @@ func main() {
 func checkSubdomain() {
 
 	reEnableSubdomainFields := func() {
-		subdomainInputCheckButton.Text = "subdomain is invalid ❌"
+		subdomainInputCheckButton.Text = lang.L("subdomain is invalid ❌")
 		subdomainInputCheckButton.Enable()
 		subdomainInputCheckButton.Refresh()
 		subdomainInput.Enable()
@@ -149,7 +156,7 @@ func checkSubdomain() {
 	} else {
 		log.Printf("Subdomain %s is valid", subdomainInput.Text)
 		defer fyne.Do(func() {
-			subdomainInputCheckButton.Text = "subdomain is valid ✅"
+			subdomainInputCheckButton.Text = lang.L("subdomain is valid ✅")
 			downloadButton.Enable()
 			downloadButton.Refresh()
 			subdomainInputCheckButton.Disable()
@@ -211,7 +218,7 @@ func scrape(hostname string, username string, password string) {
 	if result.Error != "" {
 		log.Println("Failed to login")
 		fyne.Do(func() {
-			downloadButton.Text = "Wrong credentials ❌"
+			downloadButton.Text = lang.L("Wrong credentials ❌")
 		})
 		return
 	} else {
