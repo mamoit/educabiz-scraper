@@ -12,5 +12,5 @@ linux:
 	upx --best $(LINUX_FILENAME)
 
 windows:
-	CGO_ENABLED=1 GOOS=windows CC=x86_64-w64-mingw32-gcc go build $(GO_BUILD_OPTS) -o $(WINDOWS_FILENAME)
+	CGO_ENABLED=1 GOOS=windows CC=x86_64-w64-mingw32-gcc go build $(GO_BUILD_OPTS) -ldflags -H=windowsgui -o $(WINDOWS_FILENAME)
 	upx --best $(WINDOWS_FILENAME)
