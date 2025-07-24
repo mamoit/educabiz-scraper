@@ -63,7 +63,7 @@ jobs:
         go-version: "1.24"
 
     - name: Install dependencies
-      run: apt-get install -y libgl1-mesa-dev xorg-dev libxkbcommon-dev gcc-mingw-w64
+      run: sudo apt-get install -y libgl1-mesa-dev xorg-dev libxkbcommon-dev gcc-mingw-w64
 
     - name: Build
       run: make ${{ matrix.os }}
