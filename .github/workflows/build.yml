@@ -12,13 +12,8 @@ on:
 
 jobs:
 
-  build:
-    runs-on: ${{ matrix.os }}-latest
-    continue-on-error: true
-    strategy:
-      matrix:
-        os: [ubuntu, macos, windows]
-        arch: [amd64, arm64]
+  build-macos:
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
 
@@ -37,11 +32,39 @@ jobs:
         go-version: "1.24"
 
     - name: Build
-      run: go build -trimpath -o educabiz-scraper-${{ matrix.os }}-${{ matrix.arch }}
-      env:
-        GOARCH: ${{ matrix.arch }}
+      run: make macos
 
     - uses: actions/upload-artifact@v4
       with:
         name: educabiz-scraper-${{ matrix.os }}-${{ matrix.arch }}
-        path: educabiz-scraper-${{ matrix.os }}-${{ matrix.arch }}
+        path: educabiz-scraper-${{ matrix.os }}
+
+  build-ubuntu-windows:
+    strategy:
+      matrix:
+        os: [linux, windows]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Cache build artifacts
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+          ~/.cache/fyne-cross
+        key: ${{ runner.os }}-${{ runner.arch }}-build-cache-${{ hashFiles('**/go.sum') }}
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: "1.24"
+
+    - name: Build
+      run: make ${{ matrix.os }}
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: educabiz-scraper-${{ matrix.os }}-${{ runner.arch }}
+        path: educabiz-scraper-${{ matrix.os }}
