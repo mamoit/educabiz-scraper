@@ -29,7 +29,7 @@ jobs:
           ~/go/pkg/mod
           ~/.cache/go-build
           ~/.cache/fyne-cross
-        key: ${{ runner.os }}-build-cache-${{ hashFiles('**/go.sum') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-build-cache-${{ hashFiles('**/go.sum') }}
 
     - name: Set up Go
       uses: actions/setup-go@v4
