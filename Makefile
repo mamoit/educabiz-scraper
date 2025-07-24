@@ -17,4 +17,4 @@ windows:
 	upx --best $(WINDOWS_FILENAME)
 
 macos:
-    go build $(GO_BUILD_OPTS) -o $(MACOS_FILENAME)
+	go build $(GO_BUILD_OPTS) -o $(MACOS_FILENAME)
