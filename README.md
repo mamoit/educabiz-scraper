@@ -1,4 +1,14 @@
 # Scraper for Educabiz
+Educabiz is a teacher-to-parent communication platform.
+The teachers can send messages, reports, photos, and videos through there.
+Overall, the idea is quite good, but the implementation lacks in some aspects.
+When downloading pictures and videos from the platform, I noticed two things:
+- The bulk downloader was not functioning properly.
+- Downloading one picture at a time would take forever, and the downloaded picture or video was scaled down and compressed beyond what is reasonable.
+
+After looking into the traffic of the site, I noticed that there is actually a reference to the original media files in the requests, it's just not used by the frontend though.
+So, I made this scraper to ease the life of anyone who wants to keep their children's pictures in good quality and with minimal effort.
+I could have made it a command-line tool if it were just for myself or even a bash script, but I took this opportunity to make something that is useful also to other parents who lack the expertise to do this and to learn how to create a simple cross-platform GUI in Go.
 
 ## Como utilizar (PT)
 1. Faz download da última versão do programa para o teu sistema operativo [aqui](https://github.com/mamoit/educabiz-scraper/releases) (`.exe` para windows)
@@ -14,19 +24,3 @@
 4. Fill in the subdomain of your school, it is usually the name in lower case, and it is the first part of the URL you use to access the website.
 5. Fill in the user and password.
 6. Press "download" and wait for it to finish.
-
-## Compiling from linux
-### Dependencies
-Install fyne's dependencies https://docs.fyne.io/started/
-
-`make` if you want to use the `Makefile`.
-
-### Cross compiling to Windows
-``` bash
-make windows
-```
-
-### Cross compiling to Mac OSX
-I'm not doing this.
-Cross compiling to Mac OSX seems to be way too much of a hassel and seems to require an apple developer account.
-If someone wants to contribute a solution to enable the generation of binaries for Mac OSX please leave me a PR.
